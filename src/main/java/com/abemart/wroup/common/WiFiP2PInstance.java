@@ -9,9 +9,6 @@ import android.util.Log;
 import com.abemart.wroup.common.listeners.PeerConnectedListener;
 import com.abemart.wroup.common.listeners.ServiceDisconnectedListener;
 
-import java.util.ArrayList;
-import java.util.List;
-
 
 public class WiFiP2PInstance implements WifiP2pManager.ConnectionInfoListener {
 
@@ -25,8 +22,8 @@ public class WiFiP2PInstance implements WifiP2pManager.ConnectionInfoListener {
 
     private WiFiP2PDevice thisDevice;
 
-    private List<PeerConnectedListener> peerConnectedListeners = new ArrayList<>();
-    private List<ServiceDisconnectedListener> serviceDisconnectedListeners = new ArrayList<>();
+    private PeerConnectedListener peerConnectedListener;
+    private ServiceDisconnectedListener serviceDisconnectedListener;
 
     private WiFiP2PInstance() {
     }
@@ -68,12 +65,12 @@ public class WiFiP2PInstance implements WifiP2pManager.ConnectionInfoListener {
         return thisDevice;
     }
 
-    public void addPeerConnectedListener(PeerConnectedListener peerConnectedListener) {
-        peerConnectedListeners.add(peerConnectedListener);
+    public void setPeerConnectedListener(PeerConnectedListener peerConnectedListener) {
+        this.peerConnectedListener = peerConnectedListener;
     }
 
-    public void addServerDisconnectedListener(ServiceDisconnectedListener serviceDisconnectedListener) {
-        serviceDisconnectedListeners.add(serviceDisconnectedListener);
+    public void setServerDisconnectedListener(ServiceDisconnectedListener serviceDisconnectedListener) {
+        this.serviceDisconnectedListener = serviceDisconnectedListener;
     }
 
     public void startPeerDiscovering() {
@@ -92,13 +89,13 @@ public class WiFiP2PInstance implements WifiP2pManager.ConnectionInfoListener {
 
     @Override
     public void onConnectionInfoAvailable(WifiP2pInfo info) {
-        for (PeerConnectedListener peerConnectedListener : peerConnectedListeners) {
+        if (peerConnectedListener != null) {
             peerConnectedListener.onPeerConnected(info);
         }
     }
 
     public void onServerDeviceDisconnected() {
-        for (ServiceDisconnectedListener serviceDisconnectedListener : serviceDisconnectedListeners) {
+        if (serviceDisconnectedListener != null) {
             serviceDisconnectedListener.onServerDisconnectedListener();
         }
     }

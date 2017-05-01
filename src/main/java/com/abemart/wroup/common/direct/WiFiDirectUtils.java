@@ -64,21 +64,17 @@ public class WiFiDirectUtils {
         wiFiP2PInstance.getWifiP2pManager().requestGroupInfo(wiFiP2PInstance.getChannel(), new WifiP2pManager.GroupInfoListener() {
             @Override
             public void onGroupInfoAvailable(final WifiP2pGroup group) {
-                if (group != null && group.isGroupOwner()) {
-                    wiFiP2PInstance.getWifiP2pManager().removeGroup(wiFiP2PInstance.getChannel(), new WifiP2pManager.ActionListener() {
-                        @Override
-                        public void onSuccess() {
-                            Log.i(TAG, "Group removed: " + group.getNetworkName());
-                        }
+                wiFiP2PInstance.getWifiP2pManager().removeGroup(wiFiP2PInstance.getChannel(), new WifiP2pManager.ActionListener() {
+                    @Override
+                    public void onSuccess() {
+                        Log.i(TAG, "Group removed: " + group.getNetworkName());
+                    }
 
-                        @Override
-                        public void onFailure(int reason) {
-                            Log.e(TAG, "Fail disconnecting from group. Reason: " + WiFiP2PError.fromReason(reason));
-                        }
-                    });
-                } else {
-                    Log.d(TAG, "I'm not the group owner, I can't remove the group");
-                }
+                    @Override
+                    public void onFailure(int reason) {
+                        Log.e(TAG, "Fail disconnecting from group. Reason: " + WiFiP2PError.fromReason(reason));
+                    }
+                });
             }
         });
     }

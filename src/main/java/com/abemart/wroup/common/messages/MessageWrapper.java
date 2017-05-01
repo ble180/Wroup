@@ -38,4 +38,13 @@ public class MessageWrapper {
         this.messageType = messageType;
     }
 
+    @Override
+    public String toString() {
+        return "MessageWrapper{" +
+                "message='" + message + '\'' +
+                ", messageType=" + messageType +
+                ", wiFiP2PDevice=" + wiFiP2PDevice +
+                '}';
+    }
+
 }

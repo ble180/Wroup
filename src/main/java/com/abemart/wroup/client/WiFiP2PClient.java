@@ -69,8 +69,8 @@ public class WiFiP2PClient implements PeerConnectedListener, ServiceDisconnected
 
     public WiFiP2PClient(Context context, String clientName) {
         wiFiP2PInstance = WiFiP2PInstance.getInstance(context);
-        wiFiP2PInstance.addPeerConnectedListener(this);
-        wiFiP2PInstance.addServerDisconnectedListener(this);
+        wiFiP2PInstance.setPeerConnectedListener(this);
+        wiFiP2PInstance.setServerDisconnectedListener(this);
         this.clientName = clientName;
         this.clientsConnected = new HashMap<>();
     }
@@ -181,13 +181,20 @@ public class WiFiP2PClient implements PeerConnectedListener, ServiceDisconnected
             // We are connected to the server. Create a server socket to receive messages
             createServerSocket();
 
-            // We send the negotiation message to the server
-            sendServerRegistrationMessage();
-            if (serviceConnectedListener != null) {
-                serviceConnectedListener.onServiceConnected(serviceDevice);
-            }
+            // FIXME - Change this into a server socket creation listener or similar
+            // Wait 2 seconds for the server socket creation
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                public void run() {
+                    // We send the negotiation message to the server
+                    sendServerRegistrationMessage();
+                    if (serviceConnectedListener != null) {
+                        serviceConnectedListener.onServiceConnected(serviceDevice);
+                    }
 
-            isRegistered = true;
+                    isRegistered = true;
+                }
+            }, 2000);
         }
     }
 
@@ -208,13 +215,11 @@ public class WiFiP2PClient implements PeerConnectedListener, ServiceDisconnected
     public void sendMessageToAllClients(MessageWrapper message) {
         sendMessageToServer(message);
 
-        for(WiFiP2PDevice device : clientsConnected.values()) {
+        for (WiFiP2PDevice device : clientsConnected.values()) {
             if (!device.getDeviceMac().equals(wiFiP2PInstance.getThisDevice().getDeviceMac())) {
                 sendMessage(device, message);
             }
         }
-
-
     }
 
     public void sendMessage(final WiFiP2PDevice device, MessageWrapper message) {
@@ -264,13 +269,20 @@ public class WiFiP2PClient implements PeerConnectedListener, ServiceDisconnected
 
         sendDisconnectionMessage();
 
-        WiFiDirectUtils.clearServiceRequest(wiFiP2PInstance);
-        WiFiDirectUtils.stopPeerDiscovering(wiFiP2PInstance);
-        WiFiDirectUtils.removeGroup(wiFiP2PInstance);
+        // FIXME - Change this into a message sent it listener
+        // Wait 2 seconds to disconnection message was sent
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            public void run() {
+                WiFiDirectUtils.clearServiceRequest(wiFiP2PInstance);
+                WiFiDirectUtils.stopPeerDiscovering(wiFiP2PInstance);
+                WiFiDirectUtils.removeGroup(wiFiP2PInstance);
 
-        serverSocket = null;
-        isRegistered = false;
-        clientsConnected.clear();
+                serverSocket = null;
+                isRegistered = false;
+                clientsConnected.clear();
+            }
+        }, 2000);
     }
 
     public String getClientName() {
@@ -391,7 +403,7 @@ public class WiFiP2PClient implements PeerConnectedListener, ServiceDisconnected
             Log.d(TAG, "\tDecive mac: " + device.getDeviceMac());
             Log.d(TAG, "\tDevice IP: " + device.getDeviceServerSocketIP());
             Log.d(TAG, "\tDevice ServerSocket port: " + device.getDeviceServerSocketPort());
-        } else if(MessageWrapper.MessageType.DISCONNECTION_MESSAGE.equals(messageWrapper.getMessageType())) {
+        } else if (MessageWrapper.MessageType.DISCONNECTION_MESSAGE.equals(messageWrapper.getMessageType())) {
             Gson gson = new Gson();
 
             String messageContentStr = messageWrapper.getMessage();
@@ -408,14 +420,14 @@ public class WiFiP2PClient implements PeerConnectedListener, ServiceDisconnected
             Log.d(TAG, "\tDecive mac: " + device.getDeviceMac());
             Log.d(TAG, "\tDevice IP: " + device.getDeviceServerSocketIP());
             Log.d(TAG, "\tDevice ServerSocket port: " + device.getDeviceServerSocketPort());
-        } else if(MessageWrapper.MessageType.REGISTERED_DEVICES.equals(messageWrapper.getMessageType())) {
+        } else if (MessageWrapper.MessageType.REGISTERED_DEVICES.equals(messageWrapper.getMessageType())) {
             Gson gson = new Gson();
 
             String messageContentStr = messageWrapper.getMessage();
             RegisteredDevicesMessageContent registeredDevicesMessageContent = gson.fromJson(messageContentStr, RegisteredDevicesMessageContent.class);
             List<WiFiP2PDevice> devicesConnected = registeredDevicesMessageContent.getDevicesRegistered();
 
-            for(WiFiP2PDevice device : devicesConnected) {
+            for (WiFiP2PDevice device : devicesConnected) {
                 clientsConnected.put(device.getDeviceMac(), device);
                 Log.d(TAG, "Client already connected to the group:");
                 Log.d(TAG, "\tDevice name: " + device.getDeviceName());

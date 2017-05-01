@@ -59,7 +59,7 @@ public class WiFiP2PService implements PeerConnectedListener {
 
     public WiFiP2PService(Context context) {
         wiFiP2PInstance = WiFiP2PInstance.getInstance(context);
-        wiFiP2PInstance.addPeerConnectedListener(this);
+        wiFiP2PInstance.setPeerConnectedListener(this);
     }
 
     public void registerService(String instanceName, final ServiceRegisteredListener serviceRegisteredListener) {
