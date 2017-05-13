@@ -1,7 +1,7 @@
 package com.abemart.wroup.common.messages;
 
 
-import com.abemart.wroup.common.WiFiP2PDevice;
+import com.abemart.wroup.common.WroupDevice;
 
 public class MessageWrapper {
 
@@ -11,15 +11,15 @@ public class MessageWrapper {
 
     private String message;
     private MessageType messageType;
-    private WiFiP2PDevice wiFiP2PDevice;
+    private WroupDevice wroupDevice;
 
 
-    public void setWiFiP2PDevice(WiFiP2PDevice wiFiP2PDevice) {
-        this.wiFiP2PDevice = wiFiP2PDevice;
+    public void setWroupDevice(WroupDevice wroupDevice) {
+        this.wroupDevice = wroupDevice;
     }
 
-    public WiFiP2PDevice getWiFiP2PDevice() {
-        return wiFiP2PDevice;
+    public WroupDevice getWroupDevice() {
+        return wroupDevice;
     }
 
     public String getMessage() {
@@ -43,7 +43,7 @@ public class MessageWrapper {
         return "MessageWrapper{" +
                 "message='" + message + '\'' +
                 ", messageType=" + messageType +
-                ", wiFiP2PDevice=" + wiFiP2PDevice +
+                ", wroupDevice=" + wroupDevice +
                 '}';
     }
 

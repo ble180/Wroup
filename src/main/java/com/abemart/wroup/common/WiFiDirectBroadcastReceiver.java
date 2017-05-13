@@ -74,7 +74,7 @@ public class WiFiDirectBroadcastReceiver extends BroadcastReceiver {
             Log.d(TAG, "This device address: " + device.deviceAddress);
 
             if (wiFiP2PInstance.getThisDevice() == null) {
-                wiFiP2PInstance.setThisDevice(new WiFiP2PDevice(device));
+                wiFiP2PInstance.setThisDevice(new WroupDevice(device));
             }
         }
     }

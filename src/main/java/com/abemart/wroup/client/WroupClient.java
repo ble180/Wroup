@@ -14,7 +14,7 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.Log;
 
-import com.abemart.wroup.common.WiFiP2PDevice;
+import com.abemart.wroup.common.WroupDevice;
 import com.abemart.wroup.common.WiFiP2PError;
 import com.abemart.wroup.common.WiFiP2PInstance;
 import com.abemart.wroup.common.direct.WiFiDirectUtils;
@@ -29,7 +29,7 @@ import com.abemart.wroup.common.messages.DisconnectionMessageContent;
 import com.abemart.wroup.common.messages.MessageWrapper;
 import com.abemart.wroup.common.messages.RegisteredDevicesMessageContent;
 import com.abemart.wroup.common.messages.RegistrationMessageContent;
-import com.abemart.wroup.service.WiFiP2PService;
+import com.abemart.wroup.service.WroupService;
 import com.google.gson.Gson;
 
 import org.apache.commons.io.IOUtils;
@@ -44,11 +44,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class WiFiP2PClient implements PeerConnectedListener, ServiceDisconnectedListener {
+public class WroupClient implements PeerConnectedListener, ServiceDisconnectedListener {
 
-    private static final String TAG = WiFiP2PClient.class.getSimpleName();
+    private static final String TAG = WroupClient.class.getSimpleName();
 
-    private List<WiFiP2PDevice> serviceDevices = new ArrayList<>();
+    private List<WroupDevice> serviceDevices = new ArrayList<>();
 
     private DnsSdTxtRecordListener dnsSdTxtRecordListener;
     private DnsSdServiceResponseListener dnsSdServiceResponseListener;
@@ -61,13 +61,13 @@ public class WiFiP2PClient implements PeerConnectedListener, ServiceDisconnected
     private ServerSocket serverSocket;
 
     private WiFiP2PInstance wiFiP2PInstance;
-    private WiFiP2PDevice serviceDevice;
-    private Map<String, WiFiP2PDevice> clientsConnected;
+    private WroupDevice serviceDevice;
+    private Map<String, WroupDevice> clientsConnected;
     private Boolean isRegistered = false;
 
     private String clientName;
 
-    public WiFiP2PClient(Context context, String clientName) {
+    public WroupClient(Context context, String clientName) {
         wiFiP2PInstance = WiFiP2PInstance.getInstance(context);
         wiFiP2PInstance.setPeerConnectedListener(this);
         wiFiP2PInstance.setServerDisconnectedListener(this);
@@ -128,7 +128,7 @@ public class WiFiP2PClient implements PeerConnectedListener, ServiceDisconnected
         }, discoveringTimeInMillis);
     }
 
-    public void connectToService(final WiFiP2PDevice serviceDevice, ServiceConnectedListener serviceConnectedListener) {
+    public void connectToService(final WroupDevice serviceDevice, ServiceConnectedListener serviceConnectedListener) {
         this.serviceDevice = serviceDevice;
         this.serviceConnectedListener = serviceConnectedListener;
 
@@ -215,16 +215,16 @@ public class WiFiP2PClient implements PeerConnectedListener, ServiceDisconnected
     public void sendMessageToAllClients(MessageWrapper message) {
         sendMessageToServer(message);
 
-        for (WiFiP2PDevice device : clientsConnected.values()) {
+        for (WroupDevice device : clientsConnected.values()) {
             if (!device.getDeviceMac().equals(wiFiP2PInstance.getThisDevice().getDeviceMac())) {
                 sendMessage(device, message);
             }
         }
     }
 
-    public void sendMessage(final WiFiP2PDevice device, MessageWrapper message) {
+    public void sendMessage(final WroupDevice device, MessageWrapper message) {
         // Set the actual device to the message
-        message.setWiFiP2PDevice(wiFiP2PInstance.getThisDevice());
+        message.setWroupDevice(wiFiP2PInstance.getThisDevice());
 
         new AsyncTask<MessageWrapper, Void, Void>() {
             @Override
@@ -293,7 +293,7 @@ public class WiFiP2PClient implements PeerConnectedListener, ServiceDisconnected
         this.clientName = clientName;
     }
 
-    public Map<String, WiFiP2PDevice> getClientsConnected() {
+    public Map<String, WroupDevice> getClientsConnected() {
         return clientsConnected;
     }
 
@@ -312,9 +312,9 @@ public class WiFiP2PClient implements PeerConnectedListener, ServiceDisconnected
             @Override
             public void onDnsSdTxtRecordAvailable(String fullDomainName, Map<String, String> txtRecordMap, WifiP2pDevice device) {
 
-                if (txtRecordMap.containsKey(WiFiP2PService.SERVICE_NAME_PROPERTY) && txtRecordMap.get(WiFiP2PService.SERVICE_NAME_PROPERTY).equalsIgnoreCase(WiFiP2PService.SERVICE_NAME_VALUE)) {
-                    Integer servicePort = Integer.valueOf(txtRecordMap.get(WiFiP2PService.SERVICE_PORT_PROPERTY));
-                    WiFiP2PDevice serviceDevice = new WiFiP2PDevice(device);
+                if (txtRecordMap.containsKey(WroupService.SERVICE_NAME_PROPERTY) && txtRecordMap.get(WroupService.SERVICE_NAME_PROPERTY).equalsIgnoreCase(WroupService.SERVICE_NAME_VALUE)) {
+                    Integer servicePort = Integer.valueOf(txtRecordMap.get(WroupService.SERVICE_PORT_PROPERTY));
+                    WroupDevice serviceDevice = new WroupDevice(device);
                     serviceDevice.setDeviceServerSocketPort(servicePort);
 
                     if (!serviceDevices.contains(serviceDevice)) {
@@ -391,7 +391,7 @@ public class WiFiP2PClient implements PeerConnectedListener, ServiceDisconnected
 
             String messageContentStr = messageWrapper.getMessage();
             RegistrationMessageContent registrationMessageContent = gson.fromJson(messageContentStr, RegistrationMessageContent.class);
-            WiFiP2PDevice device = registrationMessageContent.getWiFiP2PDevice();
+            WroupDevice device = registrationMessageContent.getWroupDevice();
             clientsConnected.put(device.getDeviceMac(), device);
 
             if (clientRegisteredListener != null) {
@@ -408,7 +408,7 @@ public class WiFiP2PClient implements PeerConnectedListener, ServiceDisconnected
 
             String messageContentStr = messageWrapper.getMessage();
             DisconnectionMessageContent disconnectionMessageContent = gson.fromJson(messageContentStr, DisconnectionMessageContent.class);
-            WiFiP2PDevice device = disconnectionMessageContent.getWiFiP2PDevice();
+            WroupDevice device = disconnectionMessageContent.getWroupDevice();
             clientsConnected.remove(device.getDeviceMac());
 
             if (clientDisconnectedListener != null) {
@@ -425,9 +425,9 @@ public class WiFiP2PClient implements PeerConnectedListener, ServiceDisconnected
 
             String messageContentStr = messageWrapper.getMessage();
             RegisteredDevicesMessageContent registeredDevicesMessageContent = gson.fromJson(messageContentStr, RegisteredDevicesMessageContent.class);
-            List<WiFiP2PDevice> devicesConnected = registeredDevicesMessageContent.getDevicesRegistered();
+            List<WroupDevice> devicesConnected = registeredDevicesMessageContent.getDevicesRegistered();
 
-            for (WiFiP2PDevice device : devicesConnected) {
+            for (WroupDevice device : devicesConnected) {
                 clientsConnected.put(device.getDeviceMac(), device);
                 Log.d(TAG, "Client already connected to the group:");
                 Log.d(TAG, "\tDevice name: " + device.getDeviceName());
@@ -444,7 +444,7 @@ public class WiFiP2PClient implements PeerConnectedListener, ServiceDisconnected
 
     private void sendServerRegistrationMessage() {
         RegistrationMessageContent content = new RegistrationMessageContent();
-        content.setWiFiP2PDevice(wiFiP2PInstance.getThisDevice());
+        content.setWroupDevice(wiFiP2PInstance.getThisDevice());
         content.setClientName(clientName);
 
         Gson gson = new Gson();
@@ -458,7 +458,7 @@ public class WiFiP2PClient implements PeerConnectedListener, ServiceDisconnected
 
     private void sendDisconnectionMessage() {
         DisconnectionMessageContent content = new DisconnectionMessageContent();
-        content.setWiFiP2PDevice(wiFiP2PInstance.getThisDevice());
+        content.setWroupDevice(wiFiP2PInstance.getThisDevice());
         content.setClientName(clientName);
 
         Gson gson = new Gson();

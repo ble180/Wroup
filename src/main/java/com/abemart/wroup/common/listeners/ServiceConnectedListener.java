@@ -1,10 +1,10 @@
 package com.abemart.wroup.common.listeners;
 
 
-import com.abemart.wroup.common.WiFiP2PDevice;
+import com.abemart.wroup.common.WroupDevice;
 
 public interface ServiceConnectedListener {
 
-    void onServiceConnected(WiFiP2PDevice serviceDevice);
+    void onServiceConnected(WroupDevice serviceDevice);
 
 }

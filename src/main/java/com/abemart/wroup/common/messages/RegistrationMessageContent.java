@@ -1,12 +1,12 @@
 package com.abemart.wroup.common.messages;
 
 
-import com.abemart.wroup.common.WiFiP2PDevice;
+import com.abemart.wroup.common.WroupDevice;
 
 public class RegistrationMessageContent {
 
     private String clientName;
-    private WiFiP2PDevice wiFiP2PDevice;
+    private WroupDevice wroupDevice;
 
     public String getClientName() {
         return clientName;
@@ -16,11 +16,11 @@ public class RegistrationMessageContent {
         this.clientName = clientName;
     }
 
-    public WiFiP2PDevice getWiFiP2PDevice() {
-        return wiFiP2PDevice;
+    public WroupDevice getWroupDevice() {
+        return wroupDevice;
     }
 
-    public void setWiFiP2PDevice(WiFiP2PDevice wiFiP2PDevice) {
-        this.wiFiP2PDevice = wiFiP2PDevice;
+    public void setWroupDevice(WroupDevice wroupDevice) {
+        this.wroupDevice = wroupDevice;
     }
 }

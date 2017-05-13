@@ -20,7 +20,7 @@ public class WiFiP2PInstance implements WifiP2pManager.ConnectionInfoListener {
     private WifiP2pManager.Channel channel;
     private WiFiDirectBroadcastReceiver broadcastReceiver;
 
-    private WiFiP2PDevice thisDevice;
+    private WroupDevice thisDevice;
 
     private PeerConnectedListener peerConnectedListener;
     private ServiceDisconnectedListener serviceDisconnectedListener;
@@ -57,11 +57,11 @@ public class WiFiP2PInstance implements WifiP2pManager.ConnectionInfoListener {
         return broadcastReceiver;
     }
 
-    public void setThisDevice(WiFiP2PDevice thisDevice) {
+    public void setThisDevice(WroupDevice thisDevice) {
         this.thisDevice = thisDevice;
     }
 
-    public WiFiP2PDevice getThisDevice() {
+    public WroupDevice getThisDevice() {
         return thisDevice;
     }
 

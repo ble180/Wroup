@@ -9,7 +9,7 @@ import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.abemart.wroup.common.WiFiP2PDevice;
+import com.abemart.wroup.common.WroupDevice;
 import com.abemart.wroup.common.WiFiP2PError;
 import com.abemart.wroup.common.WiFiP2PInstance;
 import com.abemart.wroup.common.direct.WiFiDirectUtils;
@@ -37,10 +37,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class WiFiP2PService implements PeerConnectedListener {
+public class WroupService implements PeerConnectedListener {
 
 
-    private static final String TAG = WiFiP2PService.class.getSimpleName();
+    private static final String TAG = WroupService.class.getSimpleName();
 
     private static final String SERVICE_TYPE = "_pocha._tcp";
     public static final String SERVICE_PORT_PROPERTY = "SERVICE_PORT";
@@ -51,13 +51,13 @@ public class WiFiP2PService implements PeerConnectedListener {
     private DataReceivedListener dataReceivedListener;
     private ClientRegisteredListener clientRegisteredListener;
     private ClientDisconnectedListener clientDisconnectedListener;
-    private Map<String, WiFiP2PDevice> clientsConnected = new HashMap<>();
+    private Map<String, WroupDevice> clientsConnected = new HashMap<>();
     private WiFiP2PInstance wiFiP2PInstance;
 
     private ServerSocket serverSocket;
     private Boolean groupAlreadyCreated = false;
 
-    public WiFiP2PService(Context context) {
+    public WroupService(Context context) {
         wiFiP2PInstance = WiFiP2PInstance.getInstance(context);
         wiFiP2PInstance.setPeerConnectedListener(this);
     }
@@ -154,15 +154,15 @@ public class WiFiP2PService implements PeerConnectedListener {
     }
 
     public void sendMessageToAllClients(final MessageWrapper message) {
-        for (WiFiP2PDevice clientDevice : clientsConnected.values()) {
+        for (WroupDevice clientDevice : clientsConnected.values()) {
             sendMessage(clientDevice, message);
         }
     }
 
 
-    public void sendMessage(final WiFiP2PDevice device, MessageWrapper message) {
+    public void sendMessage(final WroupDevice device, MessageWrapper message) {
         // Set the actual device to the message
-        message.setWiFiP2PDevice(wiFiP2PInstance.getThisDevice());
+        message.setWroupDevice(wiFiP2PInstance.getThisDevice());
 
         new AsyncTask<MessageWrapper, Void, Void>() {
             @Override
@@ -288,7 +288,7 @@ public class WiFiP2PService implements PeerConnectedListener {
 
             String messageContentStr = messageWrapper.getMessage();
             RegistrationMessageContent registrationMessageContent = gson.fromJson(messageContentStr, RegistrationMessageContent.class);
-            WiFiP2PDevice client = registrationMessageContent.getWiFiP2PDevice();
+            WroupDevice client = registrationMessageContent.getWroupDevice();
             client.setDeviceServerSocketIP(fromAddress.getHostAddress());
             clientsConnected.put(client.getDeviceMac(), client);
 
@@ -299,7 +299,7 @@ public class WiFiP2PService implements PeerConnectedListener {
             Log.d(TAG, "\tDevice ServerSocket port: " + client.getDeviceServerSocketPort());
 
             // Sending to all clients that new client is connected
-            for (WiFiP2PDevice device : clientsConnected.values()) {
+            for (WroupDevice device : clientsConnected.values()) {
                 if (!client.getDeviceMac().equals(device.getDeviceMac())) {
                     sendConnectionMessage(device, client);
                 } else {
@@ -315,7 +315,7 @@ public class WiFiP2PService implements PeerConnectedListener {
 
             String messageContentStr = messageWrapper.getMessage();
             DisconnectionMessageContent disconnectionMessageContent = gson.fromJson(messageContentStr, DisconnectionMessageContent.class);
-            WiFiP2PDevice client = disconnectionMessageContent.getWiFiP2PDevice();
+            WroupDevice client = disconnectionMessageContent.getWroupDevice();
             clientsConnected.remove(client.getDeviceMac());
 
             Log.d(TAG, "Client disconnected:");
@@ -325,7 +325,7 @@ public class WiFiP2PService implements PeerConnectedListener {
             Log.d(TAG, "\tDevice ServerSocket port: " + client.getDeviceServerSocketPort());
 
             // Sending to all clients that a client is disconnected now
-            for (WiFiP2PDevice device : clientsConnected.values()) {
+            for (WroupDevice device : clientsConnected.values()) {
                 if (!client.getDeviceMac().equals(device.getDeviceMac())) {
                     sendDisconnectionMessage(device, client);
                 }
@@ -341,9 +341,9 @@ public class WiFiP2PService implements PeerConnectedListener {
         }
     }
 
-    private void sendConnectionMessage(WiFiP2PDevice deviceToSend, WiFiP2PDevice deviceConnected) {
+    private void sendConnectionMessage(WroupDevice deviceToSend, WroupDevice deviceConnected) {
         RegistrationMessageContent content = new RegistrationMessageContent();
-        content.setWiFiP2PDevice(deviceConnected);
+        content.setWroupDevice(deviceConnected);
 
         Gson gson = new Gson();
 
@@ -354,9 +354,9 @@ public class WiFiP2PService implements PeerConnectedListener {
         sendMessage(deviceToSend, messageWrapper);
     }
 
-    private void sendDisconnectionMessage(WiFiP2PDevice deviceToSend, WiFiP2PDevice deviceDisconnected) {
+    private void sendDisconnectionMessage(WroupDevice deviceToSend, WroupDevice deviceDisconnected) {
         DisconnectionMessageContent content = new DisconnectionMessageContent();
-        content.setWiFiP2PDevice(deviceDisconnected);
+        content.setWroupDevice(deviceDisconnected);
 
         Gson gson = new Gson();
 
@@ -367,9 +367,9 @@ public class WiFiP2PService implements PeerConnectedListener {
         sendMessage(deviceToSend, disconnectionMessage);
     }
 
-    private void sendRegisteredDevicesMessage(WiFiP2PDevice deviceToSend) {
-        List<WiFiP2PDevice> devicesConnected = new ArrayList<>();
-        for (WiFiP2PDevice device : clientsConnected.values()) {
+    private void sendRegisteredDevicesMessage(WroupDevice deviceToSend) {
+        List<WroupDevice> devicesConnected = new ArrayList<>();
+        for (WroupDevice device : clientsConnected.values()) {
             if (!device.getDeviceMac().equals(deviceToSend.getDeviceMac())) {
                 devicesConnected.add(device);
             }
