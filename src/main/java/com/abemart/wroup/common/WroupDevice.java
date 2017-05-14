@@ -11,6 +11,8 @@ public class WroupDevice {
     private String deviceServerSocketIP;
     private int deviceServerSocketPort;
 
+    private String customName;
+
     public WroupDevice() {
 
     }
@@ -50,6 +52,14 @@ public class WroupDevice {
 
     public void setDeviceServerSocketPort(int deviceServerSocketPort) {
         this.deviceServerSocketPort = deviceServerSocketPort;
+    }
+
+    public String getCustomName() {
+        return customName;
+    }
+
+    public void setCustomName(String customName) {
+        this.customName = customName;
     }
 
     @Override

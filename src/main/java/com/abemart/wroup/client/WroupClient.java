@@ -14,9 +14,10 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.Log;
 
-import com.abemart.wroup.common.WroupDevice;
 import com.abemart.wroup.common.WiFiP2PError;
 import com.abemart.wroup.common.WiFiP2PInstance;
+import com.abemart.wroup.common.WroupDevice;
+import com.abemart.wroup.common.WroupServiceDevice;
 import com.abemart.wroup.common.direct.WiFiDirectUtils;
 import com.abemart.wroup.common.listeners.ClientDisconnectedListener;
 import com.abemart.wroup.common.listeners.ClientRegisteredListener;
@@ -48,7 +49,9 @@ public class WroupClient implements PeerConnectedListener, ServiceDisconnectedLi
 
     private static final String TAG = WroupClient.class.getSimpleName();
 
-    private List<WroupDevice> serviceDevices = new ArrayList<>();
+    private static WroupClient instance;
+
+    private List<WroupServiceDevice> serviceDevices = new ArrayList<>();
 
     private DnsSdTxtRecordListener dnsSdTxtRecordListener;
     private DnsSdServiceResponseListener dnsSdServiceResponseListener;
@@ -65,14 +68,18 @@ public class WroupClient implements PeerConnectedListener, ServiceDisconnectedLi
     private Map<String, WroupDevice> clientsConnected;
     private Boolean isRegistered = false;
 
-    private String clientName;
-
-    public WroupClient(Context context, String clientName) {
+    private WroupClient(Context context) {
         wiFiP2PInstance = WiFiP2PInstance.getInstance(context);
         wiFiP2PInstance.setPeerConnectedListener(this);
         wiFiP2PInstance.setServerDisconnectedListener(this);
-        this.clientName = clientName;
         this.clientsConnected = new HashMap<>();
+    }
+
+    public static WroupClient getInstance(Context context) {
+        if (instance == null) {
+            instance = new WroupClient(context);
+        }
+        return instance;
     }
 
     public void discoverServices(Long discoveringTimeInMillis, final ServiceDiscoveredListener serviceDiscoveredListener) {
@@ -285,14 +292,6 @@ public class WroupClient implements PeerConnectedListener, ServiceDisconnectedLi
         }, 2000);
     }
 
-    public String getClientName() {
-        return clientName;
-    }
-
-    public void setClientName(String clientName) {
-        this.clientName = clientName;
-    }
-
     public Map<String, WroupDevice> getClientsConnected() {
         return clientsConnected;
     }
@@ -314,11 +313,12 @@ public class WroupClient implements PeerConnectedListener, ServiceDisconnectedLi
 
                 if (txtRecordMap.containsKey(WroupService.SERVICE_NAME_PROPERTY) && txtRecordMap.get(WroupService.SERVICE_NAME_PROPERTY).equalsIgnoreCase(WroupService.SERVICE_NAME_VALUE)) {
                     Integer servicePort = Integer.valueOf(txtRecordMap.get(WroupService.SERVICE_PORT_PROPERTY));
-                    WroupDevice serviceDevice = new WroupDevice(device);
+                    WroupServiceDevice serviceDevice = new WroupServiceDevice(device);
                     serviceDevice.setDeviceServerSocketPort(servicePort);
+                    serviceDevice.setTxtRecordMap(txtRecordMap);
 
                     if (!serviceDevices.contains(serviceDevice)) {
-                        Log.i(TAG, "Found a new Pocha service: ");
+                        Log.i(TAG, "Found a new Wroup service: ");
                         Log.i(TAG, "\tDomain Name: " + fullDomainName);
                         Log.i(TAG, "\tDevice Name: " + device.deviceName);
                         Log.i(TAG, "\tDevice Address: " + device.deviceAddress);
@@ -445,7 +445,6 @@ public class WroupClient implements PeerConnectedListener, ServiceDisconnectedLi
     private void sendServerRegistrationMessage() {
         RegistrationMessageContent content = new RegistrationMessageContent();
         content.setWroupDevice(wiFiP2PInstance.getThisDevice());
-        content.setClientName(clientName);
 
         Gson gson = new Gson();
 
@@ -459,7 +458,6 @@ public class WroupClient implements PeerConnectedListener, ServiceDisconnectedLi
     private void sendDisconnectionMessage() {
         DisconnectionMessageContent content = new DisconnectionMessageContent();
         content.setWroupDevice(wiFiP2PInstance.getThisDevice());
-        content.setClientName(clientName);
 
         Gson gson = new Gson();
 

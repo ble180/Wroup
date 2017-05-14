@@ -9,9 +9,9 @@ import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.abemart.wroup.common.WroupDevice;
 import com.abemart.wroup.common.WiFiP2PError;
 import com.abemart.wroup.common.WiFiP2PInstance;
+import com.abemart.wroup.common.WroupDevice;
 import com.abemart.wroup.common.direct.WiFiDirectUtils;
 import com.abemart.wroup.common.listeners.ClientDisconnectedListener;
 import com.abemart.wroup.common.listeners.ClientRegisteredListener;
@@ -42,11 +42,14 @@ public class WroupService implements PeerConnectedListener {
 
     private static final String TAG = WroupService.class.getSimpleName();
 
-    private static final String SERVICE_TYPE = "_pocha._tcp";
+    private static final String SERVICE_TYPE = "_wroup._tcp";
     public static final String SERVICE_PORT_PROPERTY = "SERVICE_PORT";
     public static final Integer SERVICE_PORT_VALUE = 9999;
     public static final String SERVICE_NAME_PROPERTY = "SERVICE_NAME";
-    public static final String SERVICE_NAME_VALUE = "POCHA";
+    public static final String SERVICE_NAME_VALUE = "WROUP";
+    public static final String SERVICE_GROUP_NAME = "GROUP_NAME";
+
+    private static WroupService instance;
 
     private DataReceivedListener dataReceivedListener;
     private ClientRegisteredListener clientRegisteredListener;
@@ -57,12 +60,23 @@ public class WroupService implements PeerConnectedListener {
     private ServerSocket serverSocket;
     private Boolean groupAlreadyCreated = false;
 
-    public WroupService(Context context) {
+    private WroupService(Context context) {
         wiFiP2PInstance = WiFiP2PInstance.getInstance(context);
         wiFiP2PInstance.setPeerConnectedListener(this);
     }
 
-    public void registerService(String instanceName, final ServiceRegisteredListener serviceRegisteredListener) {
+    public static WroupService getInstance(Context context) {
+        if (instance == null) {
+            instance = new WroupService(context);
+        }
+        return instance;
+    }
+
+    public void registerService(String groupName, ServiceRegisteredListener serviceRegisteredListener) {
+        registerService(groupName, null, serviceRegisteredListener);
+    }
+
+    public void registerService(String groupName, Map<String, String> customProperties, final ServiceRegisteredListener serviceRegisteredListener) {
 
         // We need to start peer discovering because otherwise the clients cannot found the service
         wiFiP2PInstance.startPeerDiscovering();
@@ -70,8 +84,16 @@ public class WroupService implements PeerConnectedListener {
         Map<String, String> record = new HashMap<>();
         record.put(SERVICE_PORT_PROPERTY, SERVICE_PORT_VALUE.toString());
         record.put(SERVICE_NAME_PROPERTY, SERVICE_NAME_VALUE);
+        record.put(SERVICE_GROUP_NAME, groupName);
 
-        WifiP2pDnsSdServiceInfo serviceInfo = WifiP2pDnsSdServiceInfo.newInstance(instanceName, SERVICE_TYPE, record);
+        // Insert the custom properties to the record Map
+        if (customProperties != null) {
+            for (Map.Entry<String, String> entry : customProperties.entrySet()) {
+                record.put(entry.getKey(), entry.getValue());
+            }
+        }
+
+        WifiP2pDnsSdServiceInfo serviceInfo = WifiP2pDnsSdServiceInfo.newInstance(groupName, SERVICE_TYPE, record);
 
         wiFiP2PInstance.getWifiP2pManager().clearLocalServices(wiFiP2PInstance.getChannel(), new WifiP2pManager.ActionListener() {
 
@@ -276,7 +298,7 @@ public class WroupService implements PeerConnectedListener {
 
                 @Override
                 public void onFailure(int reason) {
-                    Log.e(TAG, "Error creating group. Reason: " + WiFiP2PError.fromReason(reason).name());
+                    Log.e(TAG, "Error creating group. Reason: " + WiFiP2PError.fromReason(reason));
                 }
             });
         }
