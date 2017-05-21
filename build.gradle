@@ -33,3 +33,6 @@ dependencies {
     compile 'com.google.code.gson:gson:2.8.0'
     compile 'commons-io:commons-io:2.4'
 }
+
+apply from: 'install.gradle'
+apply from: 'bintray.gradle'

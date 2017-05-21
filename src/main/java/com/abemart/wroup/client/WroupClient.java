@@ -60,23 +60,18 @@ import java.util.Map;
  * <p>
  * To discover the Wroup services registered you only need to do the following:
  * <pre>
- * {@code
- *
- * wiFiP2PClient = WroupClient.getInstance(getApplicationContext());
+ * {@code wiFiP2PClient = WroupClient.getInstance(getApplicationContext());
  * wiFiP2PClient.discoverServices(5000L, new ServiceDiscoveredListener() {
  *
- *  @Override
  *  public void onNewServiceDeviceDiscovered(WroupServiceDevice serviceDevice) {
  *      Log.i(TAG, "New service found:");
  *      Log.i(TAG, "\tName: " + serviceDevice.getDeviceName());
  *  }
  *
- *  @Override
- *  public void onFinishServiceDeviceDiscovered(List<WroupServiceDevice> serviceDevices) {
+ *  public void onFinishServiceDeviceDiscovered(List &lt;WroupServiceDevice&gt; serviceDevices) {
  *      Log.i(TAG, "Found '" + serviceDevices.size() + "' services");
  *  }
  *
- *  @Override
  *  public void onError(WiFiP2PError wiFiP2PError) {
  *      Toast.makeText(getApplicationContext(), "Error searching groups: " + wiFiP2PError, Toast.LENGTH_LONG).show();
  *  }
