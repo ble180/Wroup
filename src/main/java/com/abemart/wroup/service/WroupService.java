@@ -37,6 +37,35 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Singleton class acting as a "server" device.
+ * <p>
+ * With Wroup Library you can register a service in the current local network to be discovered by
+ * other devices. When a service is registered a WiFi P2P Group is created, we know it as Wroup ;)
+ * <p>
+ * <code>WroupService</code> is the group owner and it manages the group changes (connections and
+ * disconnections). When a new client is connected/disconnected the service device notify to the
+ * other devices connected.
+ * <p>
+ * To register a service you must do the following:
+ * <pre>
+ * {@code
+ *
+ * wiFiP2PService = WroupService.getInstance(getApplicationContext());
+ * wiFiP2PService.registerService(groupName, new ServiceRegisteredListener() {
+ *
+ *  public void onSuccessServiceRegistered() {
+ *      Log.i(TAG, "Wroup created. Waiting for client connections...");
+ *  }
+ *
+ *  public void onErrorServiceRegistered(WiFiP2PError wiFiP2PError) {
+ *      Log.e(TAG, "Error creating group");
+ *  }
+ *
+ * });
+ * }
+ * </pre>
+ */
 public class WroupService implements PeerConnectedListener {
 
 
@@ -65,6 +94,13 @@ public class WroupService implements PeerConnectedListener {
         wiFiP2PInstance.setPeerConnectedListener(this);
     }
 
+    /**
+     * Return the <code>WroupService</code> instance. If the instance doesn't exist yet, it's
+     * created and returned.
+     *
+     * @param context The application context.
+     * @return The actual <code>WroupService</code> instance.
+     */
     public static WroupService getInstance(Context context) {
         if (instance == null) {
             instance = new WroupService(context);
@@ -72,10 +108,31 @@ public class WroupService implements PeerConnectedListener {
         return instance;
     }
 
+    /**
+     * Start a Wroup service registration in the actual local network with the name indicated in
+     * the arguments. When te service is registered the method
+     * {@link ServiceRegisteredListener#onSuccessServiceRegistered()} is called.
+     *
+     * @param groupName                 The name of the group that want to be created.
+     * @param serviceRegisteredListener The <code>ServiceRegisteredListener</code> to notify
+     *                                  registration changes.
+     */
     public void registerService(String groupName, ServiceRegisteredListener serviceRegisteredListener) {
         registerService(groupName, null, serviceRegisteredListener);
     }
 
+    /**
+     * Start a Wroup service registration in the actual local network with the name indicated in
+     * the arguments. When te service is registered the method
+     * {@link ServiceRegisteredListener#onSuccessServiceRegistered()} is called.
+     *
+     * @param groupName                 The name of the group that want to be created.
+     * @param customProperties          A Map of custom properties which will be registered with the
+     *                                  service. This properties can be accessed by the client devices
+     *                                  when the service is discovered.
+     * @param serviceRegisteredListener The <code>ServiceRegisteredListener</code> to notify
+     *                                  registration changes.
+     */
     public void registerService(String groupName, Map<String, String> customProperties, final ServiceRegisteredListener serviceRegisteredListener) {
 
         // We need to start peer discovering because otherwise the clients cannot found the service
@@ -134,6 +191,10 @@ public class WroupService implements PeerConnectedListener {
         });
     }
 
+    /**
+     * Remove the group created. Before the disconnection, the server sends a message to all
+     * clients connected to notify the disconnection.
+     */
     public void disconnect() {
         if (serverSocket != null) {
             try {
@@ -153,14 +214,31 @@ public class WroupService implements PeerConnectedListener {
         WiFiDirectUtils.stopPeerDiscovering(wiFiP2PInstance);
     }
 
+    /**
+     * Set the listener to know when data is received from the client devices connected to the group.
+     *
+     * @param dataReceivedListener The <code>DataReceivedListener</code> to notify data entries.
+     */
     public void setDataReceivedListener(DataReceivedListener dataReceivedListener) {
         this.dataReceivedListener = dataReceivedListener;
     }
 
+    /**
+     * Set the listener to know when a client has been disconnected from the group.
+     *
+     * @param clientDisconnectedListener The <code>ClientDisconnectedListener</code> to notify
+     *                                   client disconnections.
+     */
     public void setClientDisconnectedListener(ClientDisconnectedListener clientDisconnectedListener) {
         this.clientDisconnectedListener = clientDisconnectedListener;
     }
 
+    /**
+     * Set the listener to know when a new client is registered in the group.
+     *
+     * @param clientRegisteredListener The <code>ClientRegisteredListener</code> to notify new
+     *                                 connections in the group.
+     */
     public void setClientRegisteredListener(ClientRegisteredListener clientRegisteredListener) {
         this.clientRegisteredListener = clientRegisteredListener;
     }
@@ -175,13 +253,23 @@ public class WroupService implements PeerConnectedListener {
         }
     }
 
+    /**
+     * Send a message to all the devices connected to the group.
+     *
+     * @param message The message to be sent.
+     */
     public void sendMessageToAllClients(final MessageWrapper message) {
         for (WroupDevice clientDevice : clientsConnected.values()) {
             sendMessage(clientDevice, message);
         }
     }
 
-
+    /**
+     * Send a message to the desired device who it's connected in the group.
+     *
+     * @param device  The receiver of the message.
+     * @param message The message to be sent.
+     */
     public void sendMessage(final WroupDevice device, MessageWrapper message) {
         // Set the actual device to the message
         message.setWroupDevice(wiFiP2PInstance.getThisDevice());

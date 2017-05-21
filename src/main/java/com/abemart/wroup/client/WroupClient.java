@@ -41,10 +41,52 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Singleton class acting as a client device.
+ * <p>
+ * Wroup Library will allow you to create a "Server" device and multiple "Client" devices. The
+ * {@link WroupService} can register a service which could be discover by the multiple client
+ * devices. The client will search the Wroup services registered in the local network and could
+ * connect to any ot them.
+ * <p>
+ * WroupClient only discover Wroup services, can exist multiple services registered with WiFi-P2P in
+ * the same local network but only a WroupClient instance will found services registered by a
+ * WroupService device.
+ * <p>
+ * To discover the Wroup services registered you only need to do the following:
+ * <pre>
+ * {@code
+ *
+ * wiFiP2PClient = WroupClient.getInstance(getApplicationContext());
+ * wiFiP2PClient.discoverServices(5000L, new ServiceDiscoveredListener() {
+ *
+ *  @Override
+ *  public void onNewServiceDeviceDiscovered(WroupServiceDevice serviceDevice) {
+ *      Log.i(TAG, "New service found:");
+ *      Log.i(TAG, "\tName: " + serviceDevice.getDeviceName());
+ *  }
+ *
+ *  @Override
+ *  public void onFinishServiceDeviceDiscovered(List<WroupServiceDevice> serviceDevices) {
+ *      Log.i(TAG, "Found '" + serviceDevices.size() + "' services");
+ *  }
+ *
+ *  @Override
+ *  public void onError(WiFiP2PError wiFiP2PError) {
+ *      Toast.makeText(getApplicationContext(), "Error searching groups: " + wiFiP2PError, Toast.LENGTH_LONG).show();
+ *  }
+ * });
+ * }
+ * </pre>
+ * Once that you have the desired service to which connect you must call to
+ * {@link #connectToService(WroupServiceDevice, ServiceConnectedListener)} passing as argument the
+ * appropiate {@link WroupServiceDevice} obtained in the <code>discoverServices()</code> call.
+ */
 public class WroupClient implements PeerConnectedListener, ServiceDisconnectedListener {
 
     private static final String TAG = WroupClient.class.getSimpleName();
@@ -75,13 +117,29 @@ public class WroupClient implements PeerConnectedListener, ServiceDisconnectedLi
         this.clientsConnected = new HashMap<>();
     }
 
+    /**
+     * Return the WroupClient instance. If the instance doesn't exist yet, it's created and returned.
+     *
+     * @param context The application context.
+     * @return The actual WroupClient instance.
+     */
     public static WroupClient getInstance(Context context) {
-        if (instance == null) {
+        if (instance == null && context != null) {
             instance = new WroupClient(context);
         }
         return instance;
     }
 
+    /**
+     * Start to discover Wroup services registered in the current local network.
+     * <p>
+     * Before you start to discover services you must to register the <code>WiFiDirectBroadcastReceiver</code>
+     * in the <code>onResume()</code> method of your activity.
+     *
+     * @param discoveringTimeInMillis   The time in milliseconds to search for registered Wroup services.
+     * @param serviceDiscoveredListener The listener to notify changes of the services found by the client.
+     * @see com.abemart.wroup.common.WiFiDirectBroadcastReceiver
+     */
     public void discoverServices(Long discoveringTimeInMillis, final ServiceDiscoveredListener serviceDiscoveredListener) {
         serviceDevices.clear();
 
@@ -135,7 +193,20 @@ public class WroupClient implements PeerConnectedListener, ServiceDisconnectedLi
         }, discoveringTimeInMillis);
     }
 
-    public void connectToService(final WroupDevice serviceDevice, ServiceConnectedListener serviceConnectedListener) {
+    /**
+     * Start the connection with the <code>WroupServiceDevice</code> passed by argument. When the
+     * connection is stablished with the device service the {@link ServiceConnectedListener#onServiceConnected(WroupDevice)}
+     * method is called.
+     * <p>
+     * When the client is connected to the service, it's connected to the WiFi Direct Group created
+     * by the service device. Once the client belongs to the "Wroup" (group), it can know when a new
+     * client is connected or disconnected from it.
+     *
+     * @param serviceDevice            The WroupServiceDevice with you want to connect.
+     * @param serviceConnectedListener The listener to know when the client device is connected to
+     *                                 the desired service.
+     */
+    public void connectToService(final WroupServiceDevice serviceDevice, ServiceConnectedListener serviceConnectedListener) {
         this.serviceDevice = serviceDevice;
         this.serviceConnectedListener = serviceConnectedListener;
 
@@ -157,18 +228,42 @@ public class WroupClient implements PeerConnectedListener, ServiceDisconnectedLi
         });
     }
 
+    /**
+     * Set the listener to know when data is received from the service device or other client devices
+     * connected to the same group.
+     *
+     * @param dataReceivedListener The <code>DataReceivedListener</code> to notify data entries.
+     */
     public void setDataReceivedListener(DataReceivedListener dataReceivedListener) {
         this.dataReceivedListener = dataReceivedListener;
     }
 
+    /**
+     * Set the listener to notify when the service device has been disconnected.
+     *
+     * @param serviceDisconnectedListener The <code>ServiceDisconnectedListener</code> to notify
+     *                                    service device disconnections.
+     */
     public void setServerDisconnetedListener(ServiceDisconnectedListener serviceDisconnectedListener) {
         this.serviceDisconnectedListener = serviceDisconnectedListener;
     }
 
+    /**
+     * Set the listener to know when a new client is registered in the actual group.
+     *
+     * @param clientRegisteredListener The <code>ClientRegisteredListener</code> to notify new
+     *                                 connections in the group.
+     */
     public void setClientRegisteredListener(ClientRegisteredListener clientRegisteredListener) {
         this.clientRegisteredListener = clientRegisteredListener;
     }
 
+    /**
+     * Set the listener to know when a client has been disconnected from the group.
+     *
+     * @param clientDisconnectedListener The <code>ClientDisconnectedListener</code> to notify
+     *                                   client disconnections.
+     */
     public void setClientDisconnectedListener(ClientDisconnectedListener clientDisconnectedListener) {
         this.clientDisconnectedListener = clientDisconnectedListener;
     }
@@ -215,10 +310,20 @@ public class WroupClient implements PeerConnectedListener, ServiceDisconnectedLi
         }
     }
 
+    /**
+     * Send a message to the service device.
+     *
+     * @param message The message to be sent.
+     */
     public void sendMessageToServer(MessageWrapper message) {
         sendMessage(serviceDevice, message);
     }
 
+    /**
+     * Send a message to all the devices connected to the group, including the service device.
+     *
+     * @param message The message to be sent.
+     */
     public void sendMessageToAllClients(MessageWrapper message) {
         sendMessageToServer(message);
 
@@ -229,6 +334,12 @@ public class WroupClient implements PeerConnectedListener, ServiceDisconnectedLi
         }
     }
 
+    /**
+     * Send a message to the desired device who it's connected in the group.
+     *
+     * @param device  The receiver of the message.
+     * @param message The message to be sent.
+     */
     public void sendMessage(final WroupDevice device, MessageWrapper message) {
         // Set the actual device to the message
         message.setWroupDevice(wiFiP2PInstance.getThisDevice());
@@ -264,6 +375,10 @@ public class WroupClient implements PeerConnectedListener, ServiceDisconnectedLi
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, message);
     }
 
+    /**
+     * Disconnect from the actual group connected. Before the disconnection, the client sends a
+     * message to the service device to notify the disconnection.
+     */
     public void disconnect() {
         if (serverSocket != null) {
             try {
@@ -292,8 +407,13 @@ public class WroupClient implements PeerConnectedListener, ServiceDisconnectedLi
         }, 2000);
     }
 
-    public Map<String, WroupDevice> getClientsConnected() {
-        return clientsConnected;
+    /**
+     * Obtain the devices connected to the actual group.
+     *
+     * @return the devices connected to the actual group.
+     */
+    public Collection<WroupDevice> getClientsConnected() {
+        return clientsConnected.values();
     }
 
     private void setupDnsListeners(WiFiP2PInstance wiFiP2PInstance, ServiceDiscoveredListener serviceDiscoveredListener) {
