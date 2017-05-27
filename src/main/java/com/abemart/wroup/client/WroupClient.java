@@ -68,7 +68,7 @@ import java.util.Map;
  *      Log.i(TAG, "\tName: " + serviceDevice.getDeviceName());
  *  }
  *
- *  public void onFinishServiceDeviceDiscovered(List &lt;WroupServiceDevice&gt; serviceDevices) {
+ *  public void onFinishServiceDeviceDiscovered(List<WroupServiceDevice> serviceDevices) {
  *      Log.i(TAG, "Found '" + serviceDevices.size() + "' services");
  *  }
  *
