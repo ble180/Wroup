@@ -4,18 +4,20 @@ package com.abemart.wroup.common;
 import android.net.wifi.p2p.WifiP2pDevice;
 
 
-public class WiFiP2PDevice {
+public class WroupDevice {
 
     private String deviceName;
     private String deviceMac;
     private String deviceServerSocketIP;
     private int deviceServerSocketPort;
 
-    public WiFiP2PDevice() {
+    private String customName;
+
+    public WroupDevice() {
 
     }
 
-    public WiFiP2PDevice(WifiP2pDevice device) {
+    public WroupDevice(WifiP2pDevice device) {
         this.deviceName = device.deviceName;
         this.deviceMac = device.deviceAddress;
     }
@@ -52,9 +54,17 @@ public class WiFiP2PDevice {
         this.deviceServerSocketPort = deviceServerSocketPort;
     }
 
+    public String getCustomName() {
+        return customName;
+    }
+
+    public void setCustomName(String customName) {
+        this.customName = customName;
+    }
+
     @Override
     public String toString() {
-        return new StringBuilder().append("WiFiP2PDevice[deviceName=").append(deviceName).append("][deviceMac=").append(deviceMac).append("][deviceServerSocketIP=").append(deviceServerSocketIP).append("][deviceServerSocketPort=").append(deviceServerSocketPort).append("]").toString();
+        return new StringBuilder().append("WroupDevice[deviceName=").append(deviceName).append("][deviceMac=").append(deviceMac).append("][deviceServerSocketIP=").append(deviceServerSocketIP).append("][deviceServerSocketPort=").append(deviceServerSocketPort).append("]").toString();
     }
 
     @Override
@@ -62,7 +72,7 @@ public class WiFiP2PDevice {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        WiFiP2PDevice that = (WiFiP2PDevice) o;
+        WroupDevice that = (WroupDevice) o;
 
         if (deviceName != null ? !deviceName.equals(that.deviceName) : that.deviceName != null)
             return false;

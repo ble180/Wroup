@@ -1,27 +1,19 @@
 package com.abemart.wroup.common.messages;
 
 
-import com.abemart.wroup.common.WiFiP2PDevice;
+import com.abemart.wroup.common.WroupDevice;
 
 public class DisconnectionMessageContent {
 
-    private String clientName;
-    private WiFiP2PDevice wiFiP2PDevice;
+    private WroupDevice wroupDevice;
 
-    public String getClientName() {
-        return clientName;
+
+    public void setWroupDevice(WroupDevice wroupDevice) {
+        this.wroupDevice = wroupDevice;
     }
 
-    public void setClientName(String clientName) {
-        this.clientName = clientName;
+    public WroupDevice getWroupDevice() {
+        return wroupDevice;
     }
 
-
-    public void setWiFiP2PDevice(WiFiP2PDevice wiFiP2PDevice) {
-        this.wiFiP2PDevice = wiFiP2PDevice;
-    }
-
-    public WiFiP2PDevice getWiFiP2PDevice() {
-        return wiFiP2PDevice;
-    }
 }

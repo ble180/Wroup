@@ -1,0 +1,38 @@
+apply plugin: 'com.github.dcendents.android-maven'
+
+group = 'com.abemart.wroup'
+
+install {
+    repositories.mavenInstaller {
+        pom {
+            project {
+                packaging 'aar'
+                groupId 'com.abemart.wroup'
+                artifactId 'wroup' 
+
+                name 'Wroup' 
+                description 'Android WiFi P2P Library'
+                url 'https://github.com/ble180/Wroup'
+
+                licenses {
+                    license {
+                        name 'MIT'
+                        url 'https://opensource.org/licenses/MIT'
+                    }
+                }
+                developers {
+                    developer {
+                        id 'abemart' //YOUR ID
+                        name 'Abel Martinez' //YOUR NAME
+                        email 'ble18059@gmail.com' //YOUR EMAIL
+                    }
+                }
+                scm {
+                    connection 'https://github.com/ble180/Wroup.git' 
+                    developerConnection 'https://github.com/ble180/Wroup.git'
+                    url 'https://github.com/ble180/Wroup.git' 
+                }
+            }
+        }
+    }
+}

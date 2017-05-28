@@ -1,19 +1,19 @@
 package com.abemart.wroup.common.messages;
 
 
-import com.abemart.wroup.common.WiFiP2PDevice;
+import com.abemart.wroup.common.WroupDevice;
 
 import java.util.List;
 
 public class RegisteredDevicesMessageContent {
 
-    private List<WiFiP2PDevice> devicesRegistered;
+    private List<WroupDevice> devicesRegistered;
 
-    public List<WiFiP2PDevice> getDevicesRegistered() {
+    public List<WroupDevice> getDevicesRegistered() {
         return devicesRegistered;
     }
 
-    public void setDevicesRegistered(List<WiFiP2PDevice> devicesRegistered) {
+    public void setDevicesRegistered(List<WroupDevice> devicesRegistered) {
         this.devicesRegistered = devicesRegistered;
     }
 

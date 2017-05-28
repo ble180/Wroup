@@ -8,7 +8,8 @@ android {
         minSdkVersion 16
         targetSdkVersion 24
         versionCode 1
-        versionName "1.0"
+        versionName "0.9"
+        version 0.9
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -32,3 +33,6 @@ dependencies {
     compile 'com.google.code.gson:gson:2.8.0'
     compile 'commons-io:commons-io:2.4'
 }
+
+apply from: 'install.gradle'
+apply from: 'bintray.gradle'
