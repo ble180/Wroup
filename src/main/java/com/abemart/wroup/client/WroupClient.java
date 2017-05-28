@@ -20,7 +20,7 @@ import com.abemart.wroup.common.WroupDevice;
 import com.abemart.wroup.common.WroupServiceDevice;
 import com.abemart.wroup.common.direct.WiFiDirectUtils;
 import com.abemart.wroup.common.listeners.ClientDisconnectedListener;
-import com.abemart.wroup.common.listeners.ClientRegisteredListener;
+import com.abemart.wroup.common.listeners.ClientConnectedListener;
 import com.abemart.wroup.common.listeners.DataReceivedListener;
 import com.abemart.wroup.common.listeners.PeerConnectedListener;
 import com.abemart.wroup.common.listeners.ServiceConnectedListener;
@@ -95,7 +95,7 @@ public class WroupClient implements PeerConnectedListener, ServiceDisconnectedLi
     private ServiceConnectedListener serviceConnectedListener;
     private DataReceivedListener dataReceivedListener;
     private ServiceDisconnectedListener serviceDisconnectedListener;
-    private ClientRegisteredListener clientRegisteredListener;
+    private ClientConnectedListener clientConnectedListener;
     private ClientDisconnectedListener clientDisconnectedListener;
 
     private ServerSocket serverSocket;
@@ -246,11 +246,11 @@ public class WroupClient implements PeerConnectedListener, ServiceDisconnectedLi
     /**
      * Set the listener to know when a new client is registered in the actual group.
      *
-     * @param clientRegisteredListener The <code>ClientRegisteredListener</code> to notify new
+     * @param clientConnectedListener The <code>ClientConnectedListener</code> to notify new
      *                                 connections in the group.
      */
-    public void setClientRegisteredListener(ClientRegisteredListener clientRegisteredListener) {
-        this.clientRegisteredListener = clientRegisteredListener;
+    public void setClientConnectedListener(ClientConnectedListener clientConnectedListener) {
+        this.clientConnectedListener = clientConnectedListener;
     }
 
     /**
@@ -509,8 +509,8 @@ public class WroupClient implements PeerConnectedListener, ServiceDisconnectedLi
             WroupDevice device = registrationMessageContent.getWroupDevice();
             clientsConnected.put(device.getDeviceMac(), device);
 
-            if (clientRegisteredListener != null) {
-                clientRegisteredListener.onClientRegistered(device);
+            if (clientConnectedListener != null) {
+                clientConnectedListener.onClientConnected(device);
             }
 
             Log.d(TAG, "New client connected to the group:");

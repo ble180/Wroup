@@ -13,8 +13,8 @@ import com.abemart.wroup.common.WiFiP2PError;
 import com.abemart.wroup.common.WiFiP2PInstance;
 import com.abemart.wroup.common.WroupDevice;
 import com.abemart.wroup.common.direct.WiFiDirectUtils;
+import com.abemart.wroup.common.listeners.ClientConnectedListener;
 import com.abemart.wroup.common.listeners.ClientDisconnectedListener;
-import com.abemart.wroup.common.listeners.ClientRegisteredListener;
 import com.abemart.wroup.common.listeners.DataReceivedListener;
 import com.abemart.wroup.common.listeners.PeerConnectedListener;
 import com.abemart.wroup.common.listeners.ServiceRegisteredListener;
@@ -81,7 +81,7 @@ public class WroupService implements PeerConnectedListener {
     private static WroupService instance;
 
     private DataReceivedListener dataReceivedListener;
-    private ClientRegisteredListener clientRegisteredListener;
+    private ClientConnectedListener clientConnectedListener;
     private ClientDisconnectedListener clientDisconnectedListener;
     private Map<String, WroupDevice> clientsConnected = new HashMap<>();
     private WiFiP2PInstance wiFiP2PInstance;
@@ -236,11 +236,11 @@ public class WroupService implements PeerConnectedListener {
     /**
      * Set the listener to know when a new client is registered in the group.
      *
-     * @param clientRegisteredListener The <code>ClientRegisteredListener</code> to notify new
+     * @param clientConnectedListener The <code>ClientConnectedListener</code> to notify new
      *                                 connections in the group.
      */
-    public void setClientRegisteredListener(ClientRegisteredListener clientRegisteredListener) {
-        this.clientRegisteredListener = clientRegisteredListener;
+    public void setClientConnectedListener(ClientConnectedListener clientConnectedListener) {
+        this.clientConnectedListener = clientConnectedListener;
     }
 
     @Override
@@ -417,8 +417,8 @@ public class WroupService implements PeerConnectedListener {
                 }
             }
 
-            if (clientRegisteredListener != null) {
-                clientRegisteredListener.onClientRegistered(client);
+            if (clientConnectedListener != null) {
+                clientConnectedListener.onClientConnected(client);
             }
         } else if (messageWrapper.getMessageType().equals(MessageWrapper.MessageType.DISCONNECTION_MESSAGE)) {
             Gson gson = new Gson();
