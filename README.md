@@ -163,7 +163,7 @@ public void onDataReceived(MessageWrapper messageWrapper) {
 Messages that are not of ```NORMAL``` type are excluded from this listener.
 
 ### Cleaning the instances
-To disconnect from a group (client) or delete a group (server) you must call to:`
+To disconnect from a group (client) or delete a group (server) you must call to:
 #### Server
 ```java
 wroupService.disconnect();
