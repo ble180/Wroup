@@ -71,7 +71,7 @@ public class WroupService implements PeerConnectedListener {
 
     private static final String TAG = WroupService.class.getSimpleName();
 
-    private static final String SERVICE_TYPE = "_wroup._tcp";
+    private static final String SERVICE_TYPE = "_presence._tcp";
     public static final String SERVICE_PORT_PROPERTY = "SERVICE_PORT";
     public static final Integer SERVICE_PORT_VALUE = 9999;
     public static final String SERVICE_NAME_PROPERTY = "SERVICE_NAME";
